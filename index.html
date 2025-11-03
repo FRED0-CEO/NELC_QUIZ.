@@ -5,62 +5,52 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Quiz NELC — Pronomes Pessoais</title>
 
-  <!-- jsPDF + AutoTable (para gerar tabela no PDF) -->
+  <!-- jsPDF + AutoTable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     :root {
       --bg:#071025; --card:#0b1320; --accent:#06b6d4; --accent-2:#7c3aed;
       --muted:#94a3b8; --success:#16a34a; --danger:#ef4444;
-      --glass: rgba(255,255,255,0.03); --radius:12px;
+      --radius:12px;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; font-family:"Times New Roman", Times, serif;
-      font-size:12px;
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto;
       background:linear-gradient(180deg,#041026 0%, #07122a 100%);
       color:#e6eef6; display:flex; align-items:center; justify-content:center;
       padding:20px;
     }
-    .container{width:100%;max-width:980px}
+    .container{width:100%;max-width:900px}
     .card{background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));
           border-radius:var(--radius);padding:20px;box-shadow:0 8px 30px rgba(2,8,23,0.7);}
-    h1{text-align:center;margin-bottom:10px;font-size:20px;}
-    p{margin:6px 0;}
-    button{background:var(--accent);color:#021021;border:none;padding:8px 12px;
-           border-radius:8px;font-weight:700;cursor:pointer;font-size:12px;}
-    button:hover{opacity:0.95}
+    h1{text-align:center;margin-bottom:20px;}
+    button{background:var(--accent);color:#021021;border:none;padding:10px 14px;
+           border-radius:10px;font-weight:700;cursor:pointer;}
+    button:hover{opacity:0.9}
     button.ghost{background:transparent;color:var(--muted);
-                 border:1px solid rgba(255,255,255,0.08);}
+                 border:1px solid rgba(255,255,255,0.1);}
     .progress{height:12px;background:rgba(255,255,255,0.05);
               border-radius:999px;overflow:hidden;margin:10px 0;}
     .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));
-         transition:width .35s ease;}
+         transition:width .5s ease;}
     .option{display:flex;align-items:center;gap:10px;padding:10px;
             border-radius:10px;border:1px solid rgba(255,255,255,0.05);
-            margin-bottom:8px;cursor:pointer;transition:all .15s;}
-    .option:hover{background:rgba(255,255,255,0.03);}
-    .option.correct{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.25);}
-    .option.incorrect{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.25);}
+            margin-bottom:8px;cursor:pointer;transition:all .2s;}
+    .option:hover{background:rgba(255,255,255,0.04);}
+    .option.correct{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.3);}
+    .option.incorrect{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.3);}
     .explain{color:var(--muted);margin-top:8px;display:none;}
     .explain.show{display:block;}
     .controls{display:flex;justify-content:space-between;margin-top:15px;}
     #startScreen{text-align:center;}
-    #startScreen input{padding:8px;border-radius:8px;border:none;width:260px;margin-bottom:12px;}
+    #startScreen input{padding:8px;border-radius:8px;border:none;width:200px;margin-bottom:12px;}
     .result{margin-top:20px;padding:15px;border-radius:10px;}
     .ok{background:rgba(16,185,129,0.1);color:var(--success);}
     .bad{background:rgba(239,68,68,0.1);color:var(--danger);}
-    footer{text-align:center;color:var(--muted);margin-top:18px;font-size:12px;}
-    table{width:100%;border-collapse:collapse;font-size:12px}
-    .small{font-size:11px;color:var(--muted)}
-    .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .qarea h3{margin:8px 0;font-size:16px}
-    @media (max-width:640px){
-      #startScreen input{width:100%}
-      .meta{flex-direction:column;align-items:flex-start;gap:8px}
-    }
+    footer{text-align:center;color:var(--muted);margin-top:20px;font-size:13px;}
   </style>
 </head>
 <body>
@@ -73,26 +63,20 @@
     <input type="text" id="playerNameInput" placeholder="Teu nome completo" />
     <br>
     <button id="startBtn">Iniciar Quiz</button>
-    <p class="small">15 perguntas · Timer progressivo · PDF detalhado com relatório</p>
   </div>
 
   <!-- Tela do Quiz -->
   <div id="quizScreen" class="card" style="display:none;">
-    <div class="meta">
-      <div><strong id="qCounter">Pergunta 1 / 15</strong></div>
-      <div style="text-align:right;">⏱️ <span id="timeDisplay">00:00</span></div>
+    <div>
+      <strong id="qCounter">Pergunta 1 / 15</strong>
+      <span style="float:right;">⏱️ <span id="timeDisplay">00:00</span></span>
     </div>
-
     <div class="progress"><div class="bar" id="progressBar"></div></div>
-
-    <div id="questionArea" class="qarea"></div>
+    <div id="questionArea"></div>
 
     <div class="controls">
       <button id="prevBtn" class="ghost">◀ Anterior</button>
-      <div style="display:flex;gap:8px">
-        <button id="skipBtn" class="ghost">Pular</button>
-        <button id="nextBtn">Seguinte ▶</button>
-      </div>
+      <button id="nextBtn">Seguinte ▶</button>
     </div>
 
     <div id="resultBox" style="display:none;" class="result"></div>
@@ -102,432 +86,141 @@
 </div>
 
 <script>
-/* ========= DADOS DO QUIZ (15 perguntas) =========
-   As perguntas foram criadas com base no conteúdo da apresentação sobre Pronomes Pessoais.
-*/
-const QUESTIONS = [
-  {
-    q: "O que são pronomes pessoais?",
-    a: [
-      "Palavras que substituem nomes e indicam a pessoa que realiza ou recebe a ação",
-      "Palavras que descrevem qualidades",
-      "Palavras que ligam sujeito ao predicado",
-      "Palavras que indicam tempo"
-    ],
-    correct: 0,
-    explain: "Pronomes pessoais substituem nomes (substantivos) e indicam a pessoa (I, you, he...)."
-  },
-  {
-    q: "Qual das opções contém apenas pronomes pessoais do caso reto (sujeito)?",
-    a: [
-      "me, you, him",
-      "I, you, he",
-      "her, it, us",
-      "them, me, her"
-    ],
-    correct: 1,
-    explain: "Sujeito: I, you, he, she, it, we, they."
-  },
-  {
-    q: "Qual é o pronome objeto correspondente a 'we'?",
-    a: [
-      "us",
-      "them",
-      "we",
-      "our"
-    ],
-    correct: 0,
-    explain: "Pronome objeto de 'we' é 'us'."
-  },
-  {
-    q: "Escolhe o par correto (caso reto → caso oblíquo):",
-    a: [
-      "They → them",
-      "He → her",
-      "I → us",
-      "We → they"
-    ],
-    correct: 0,
-    explain: "'They' (sujeito) corresponde a 'them' (objeto)."
-  },
-  {
-    q: "Qual destas formas é um pronome reflexivo para 'she'?",
-    a: [
-      "herself",
-      "himself",
-      "themselves",
-      "ourselves"
-    ],
-    correct: 0,
-    explain: "Pronome reflexivo de 'she' é 'herself'."
-  },
-  {
-    q: "Em 'She gave the book to me', 'me' é:",
-    a: [
-      "Pronome reflexivo",
-      "Pronome sujeito",
-      "Pronome objeto",
-      "Adjetivo possessivo"
-    ],
-    correct: 2,
-    explain: "'Me' actua como pronome objeto (recebe a ação)."
-  },
-  {
-    q: "Qual frase está correta no presente com o verbo 'to be'?",
-    a: [
-      "I is a student.",
-      "You am a student.",
-      "He are a student.",
-      "I am a student."
-    ],
-    correct: 3,
-    explain: "Forma correta: 'I am'."
-  },
-  {
-    q: "Escolhe a forma negativa correta para 'They are':",
-    a: [
-      "They is not",
-      "They are not",
-      "They aren't be",
-      "They not are"
-    ],
-    correct: 1,
-    explain: "Negativa: 'They are not' ou 'They aren't'."
-  },
-  {
-    q: "Como se faz a pergunta com 'to be' para 'you'?",
-    a: [
-      "Are you?",
-      "Is you?",
-      "Am you?",
-      "Do you are?"
-    ],
-    correct: 0,
-    explain: "Interrogação: 'Are you?'."
-  },
-  {
-    q: "Qual é a forma passada de 'I am'?",
-    a: [
-      "I were",
-      "I be",
-      "I was",
-      "I are"
-    ],
-    correct: 2,
-    explain: "Passado de 'I am' é 'I was'."
-  },
-  {
-    q: "Selecione a frase com uso correto do pronome 'it' para objetos:",
-    a: [
-      "It are broken.",
-      "It is broken.",
-      "They is broken.",
-      "He is broken."
-    ],
-    correct: 1,
-    explain: "'It is' é a forma correta (it refere-se a coisas/animais)."
-  },
-  {
-    q: "Qual destes NÃO é pronome do caso reto?",
-    a: [
-      "He",
-      "Her",
-      "She",
-      "They"
-    ],
-    correct: 1,
-    explain: "'Her' é pronome objeto (caso oblíquo), não do caso reto."
-  },
-  {
-    q: "Como se diz 'eu mesmo' em inglês (pronome reflexivo)?",
-    a: [
-      "Yourself",
-      "Himself",
-      "Myself",
-      "Ourselves"
-    ],
-    correct: 2,
-    explain: "'Myself' significa 'eu mesmo'."
-  },
-  {
-    q: "Em perguntas no passado com 'to be', qual a forma correta para 'she'?",
-    a: [
-      "Was she?",
-      "Were she?",
-      "Is she?",
-      "Did she be?"
-    ],
-    correct: 0,
-    explain: "Interrogação no passado: 'Was she?'."
-  },
-  {
-    q: "Escolhe a resposta correta: 'We ___ teachers.'",
-    a: [
-      "is",
-      "are",
-      "am",
-      "be"
-    ],
-    correct: 1,
-    explain: "'We are teachers.' (we + are)."
-  }
+let playerName='';
+let current=0, score=0, timer=0, timerInterval=null;
+const QUESTIONS=[
+  {q:"O que são pronomes pessoais?",a:["Palavras que substituem nomes e indicam quem realiza ou recebe a ação","Palavras que descrevem lugares","Palavras que indicam tempo","Palavras que unem frases"],correct:0,explain:"Pronomes pessoais substituem nomes (I, you, he...)."},
+  {q:"Qual destes é um pronome pessoal do caso reto (sujeito)?",a:["Me","Him","They","Us"],correct:2,explain:"They é sujeito (caso reto)."},
+  {q:"Qual é o pronome objeto de 'we'?",a:["our","us","they","them"],correct:1,explain:"Pronome objeto de 'we' é 'us'."},
+  {q:"Qual par está correto (reto → objeto)?",a:["I → me","He → her","We → they","They → she"],correct:0,explain:"I → me é par correto."},
+  {q:"Qual pronome reflexivo corresponde a 'she'?",a:["Herself","Himself","Yourself","Ourselves"],correct:0,explain:"Pronome reflexivo de 'she' é 'herself'."},
+  {q:"Em 'She gave the book to me', 'me' é:",a:["Pronome sujeito","Pronome objeto","Pronome reflexivo","Adjetivo"],correct:1,explain:"'Me' atua como pronome objeto."},
+  {q:"Qual frase está correta?",a:["I is a student.","I am a student.","I are a student.","I be a student."],correct:1,explain:"Correto: 'I am a student.'"},
+  {q:"Forma negativa de 'They are':",a:["They not are","They aren't","They is not","They be not"],correct:1,explain:"Forma negativa: 'They aren't'."},
+  {q:"Pergunta correta com 'you' e verbo to be:",a:["You are?","Are you?","Is you?","Do you are?"],correct:1,explain:"Forma interrogativa: 'Are you?'."},
+  {q:"Passado de 'I am':",a:["I were","I was","I be","I are"],correct:1,explain:"Passado: 'I was'."},
+  {q:"Uso correto de 'it' para objetos:",a:["It is broken.","It are broken.","They is broken.","He are broken."],correct:0,explain:"'It is broken' é correto."},
+  {q:"Qual NÃO é pronome do caso reto?",a:["He","She","Her","They"],correct:2,explain:"'Her' é pronome objeto."},
+  {q:"Como se diz 'eu mesmo' em inglês?",a:["Himself","Yourself","Myself","Ourselves"],correct:2,explain:"'Myself' = eu mesmo."},
+  {q:"Pergunta correta no passado com 'she':",a:["Were she?","Was she?","Is she?","Did she be?"],correct:1,explain:"Pergunta correta: 'Was she?'."},
+  {q:"Completa: 'We ___ teachers.'",a:["is","are","am","be"],correct:1,explain:"Correto: 'We are teachers.'"}
 ];
 
-/* ======= Estado e elementos DOM ======= */
-let playerName = '';
-let current = 0;
-let score = 0;
-let timerSeconds = 0;
-let timerInterval = null;
-let userAnswers = Array(QUESTIONS.length).fill(null);
+const startScreen=document.getElementById('startScreen');
+const quizScreen=document.getElementById('quizScreen');
+const questionArea=document.getElementById('questionArea');
+const qCounter=document.getElementById('qCounter');
+const progressBar=document.getElementById('progressBar');
+const timeDisplay=document.getElementById('timeDisplay');
+const resultBox=document.getElementById('resultBox');
+const prevBtn=document.getElementById('prevBtn');
+const nextBtn=document.getElementById('nextBtn');
 
-const startScreen = document.getElementById('startScreen');
-const quizScreen = document.getElementById('quizScreen');
-const questionArea = document.getElementById('questionArea');
-const qCounter = document.getElementById('qCounter');
-const progressBar = document.getElementById('progressBar');
-const timeDisplay = document.getElementById('timeDisplay');
-const resultBox = document.getElementById('resultBox');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const skipBtn = document.getElementById('skipBtn');
+let userAnswers=Array(QUESTIONS.length).fill(null);
 
-/* ======= Funções utilitárias ======= */
-function formatTime(s){
-  const m = Math.floor(s/60).toString().padStart(2,'0');
-  const sec = (s%60).toString().padStart(2,'0');
-  return `${m}:${sec}`;
-}
+function formatTime(s){const m=Math.floor(s/60).toString().padStart(2,'0');const sec=(s%60).toString().padStart(2,'0');return `${m}:${sec}`;}
 
 function startTimer(){
-  timeDisplay.textContent = formatTime(timerSeconds);
-  timerInterval = setInterval(()=>{
-    timerSeconds++;
-    timeDisplay.textContent = formatTime(timerSeconds);
-  },1000);
+  timeDisplay.textContent=formatTime(timer);
+  timerInterval=setInterval(()=>{timer++;timeDisplay.textContent=formatTime(timer);},1000);
 }
 
-function stopTimer(){
-  if(timerInterval) clearInterval(timerInterval);
-  timerInterval = null;
-}
-
-/* ======= Renderizar pergunta ======= */
 function renderQuestion(){
-  const q = QUESTIONS[current];
-  questionArea.innerHTML = '';
-  const title = document.createElement('h3');
-  title.textContent = `${current+1}. ${q.q}`;
-  questionArea.appendChild(title);
-
+  const q=QUESTIONS[current];
+  questionArea.innerHTML=`<h3>${q.q}</h3>`;
   q.a.forEach((opt,i)=>{
-    const div = document.createElement('div');
-    div.className = 'option';
-    div.textContent = opt;
-    div.tabIndex = 0;
-    div.addEventListener('click', ()=> selectAnswer(i, div));
-    div.addEventListener('keydown', (e)=> { if(e.key==='Enter') selectAnswer(i, div); });
-    // Mostrar marcação caso já respondida
-    if(userAnswers[current] !== null){
-      if(i === q.correct) div.classList.add('correct');
-      else if(i === userAnswers[current]) div.classList.add('incorrect');
+    const div=document.createElement('div');
+    div.className='option';
+    div.textContent=opt;
+    div.addEventListener('click',()=>selectAnswer(i,div));
+    if(userAnswers[current]!==null){
+      if(i===q.correct) div.classList.add('correct');
+      else if(i===userAnswers[current]) div.classList.add('incorrect');
     }
     questionArea.appendChild(div);
   });
-
-  const explain = document.createElement('div');
-  explain.className = 'explain';
-  explain.textContent = q.explain || '';
-  if(userAnswers[current] !== null) explain.classList.add('show');
+  const explain=document.createElement('div');
+  explain.className='explain';
   questionArea.appendChild(explain);
-
-  qCounter.textContent = `Pergunta ${current+1} / ${QUESTIONS.length}`;
-  // Progresso relativo ao índice atual
-  progressBar.style.width = `${Math.round((current/QUESTIONS.length)*100)}%`;
-
-  prevBtn.disabled = current === 0;
-  nextBtn.disabled = current === QUESTIONS.length - 1;
+  qCounter.textContent=`Pergunta ${current+1} / ${QUESTIONS.length}`;
+  progressBar.style.width=`${(current/QUESTIONS.length)*100}%`;
+  prevBtn.disabled=current===0;
+  nextBtn.disabled=current===QUESTIONS.length-1;
 }
 
-/* ======= Selecionar resposta ======= */
-function selectAnswer(idx, el){
-  const q = QUESTIONS[current];
-  if(userAnswers[current] !== null) return; // não permite mudar resposta
-  userAnswers[current] = idx;
-
-  const all = document.querySelectorAll('.option');
+function selectAnswer(idx,el){
+  if(userAnswers[current]!==null) return;
+  const q=QUESTIONS[current];
+  userAnswers[current]=idx;
+  const all=document.querySelectorAll('.option');
   all.forEach((opt,i)=>{
-    if(i === q.correct) opt.classList.add('correct');
-    else if(i === idx) opt.classList.add('incorrect');
+    if(i===q.correct) opt.classList.add('correct');
+    else if(i===idx) opt.classList.add('incorrect');
   });
-
-  const explain = document.querySelector('.explain');
-  if(explain){
-    explain.classList.add('show');
-  }
-
-  if(idx === q.correct) score++;
-
-  // Avança automaticamente após 900ms (se não for a última)
-  setTimeout(()=>{
-    if(current < QUESTIONS.length - 1){
-      current++;
-      renderQuestion();
-    } else {
-      showResult();
-    }
-  }, 900);
+  const explain=document.querySelector('.explain');
+  explain.textContent=q.explain;
+  explain.classList.add('show');
+  if(idx===q.correct) score++;
+  setTimeout(()=>{if(current<QUESTIONS.length-1){current++;renderQuestion();}else{showResult();}},900);
 }
 
-/* ======= Mostrar Resultado e gerar PDF ======= */
 function showResult(){
-  stopTimer();
-  const total = QUESTIONS.length;
-  const pct = Math.round((score/total)*100);
-  const msg = pct >= 70 ? "Parabéns!" : "Tenta novamente!";
-  resultBox.style.display = 'block';
-  resultBox.className = `result ${pct>=70 ? 'ok' : 'bad'}`;
-  resultBox.innerHTML = `
-    <strong>${playerName}, obtiveste ${score}/${total} (${pct}%)</strong><br>
-    <em>${msg}</em><br><br>
-    <button id="pdfBtn">Gerar PDF do Resultado</button>
-    <button id="reviewBtn" class="ghost">Ver todas respostas</button>
-  `;
-
-  document.getElementById('pdfBtn').addEventListener('click', generatePDF);
-  document.getElementById('reviewBtn').addEventListener('click', showReview);
+  clearInterval(timerInterval);
+  const total=QUESTIONS.length;
+  const pct=Math.round((score/total)*100);
+  const msg=pct>=70?"Parabéns!":"Tenta novamente!";
+  resultBox.style.display='block';
+  resultBox.className=`result ${pct>=70?'ok':'bad'}`;
+  resultBox.innerHTML=`<strong>${playerName}, obtiveste ${score}/${total} (${pct}%)</strong><br>${msg}<br><br><button id="pdfBtn">Gerar PDF do Resultado</button>`;
+  document.getElementById('pdfBtn').addEventListener('click',generatePDF);
 }
 
-/* ======= Mostrar revisão completa no ecrã ======= */
-function showReview(){
-  const container = document.createElement('div');
-  container.style.marginTop = '12px';
-  const table = document.createElement('table');
-  table.innerHTML = `<thead>
-    <tr style="text-align:left"><th style="padding:6px;border-bottom:1px solid rgba(255,255,255,0.06)">#</th>
-    <th style="padding:6px;border-bottom:1px solid rgba(255,255,255,0.06)">Pergunta</th>
-    <th style="padding:6px;border-bottom:1px solid rgba(255,255,255,0.06)">Tua resposta</th>
-    <th style="padding:6px;border-bottom:1px solid rgba(255,255,255,0.06)">Resposta correcta</th></tr></thead>`;
-  const tbody = document.createElement('tbody');
-  QUESTIONS.forEach((q,i)=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td style="padding:6px;vertical-align:top">${i+1}</td>
-      <td style="padding:6px;vertical-align:top">${q.q}</td>
-      <td style="padding:6px;vertical-align:top">${userAnswers[i]===null?'<em>Sem resposta</em>':q.a[userAnswers[i]]}</td>
-      <td style="padding:6px;vertical-align:top">${q.a[q.correct]}</td>`;
-    tbody.appendChild(tr);
-  });
-  table.appendChild(tbody);
-  container.appendChild(table);
-
-  // Observações
-  const obs = document.createElement('div');
-  obs.style.marginTop = '10px';
-  obs.innerHTML = `<strong>Observações / Correções do Professor:</strong>
-    <div style="margin-top:6px">
-      <textarea style="width:100%;height:80px;border-radius:8px;padding:8px;background:rgba(255,255,255,0.02);color:inherit;border:1px solid rgba(255,255,255,0.04)"></textarea>
-    </div>`;
-  container.appendChild(obs);
-
-  // Apend na resultBox (substitui o botão de review)
-  const reviewBtn = document.getElementById('reviewBtn');
-  reviewBtn.style.display = 'none';
-  resultBox.appendChild(container);
-}
-
-/* ======= Gerar PDF detalhado ======= */
 function generatePDF(){
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({unit:'pt', format:'a4', compress:true});
-  // Cabeçalho
+  const doc=new jsPDF({unit:'pt',format:'a4'});
   doc.setFont('Times','Normal');
-  doc.setFontSize(14);
-  doc.text("Quiz NELC — Pronomes Pessoais (Personal Pronouns)", 40, 50);
-  doc.setFontSize(11);
-  doc.text(`Participante: ${playerName}`, 40, 72);
-  doc.text(`Pontuação: ${score}/${QUESTIONS.length}`, 40, 88);
-  const pct = Math.round((score/QUESTIONS.length)*100);
-  doc.text(`Percentagem: ${pct}%`, 40, 104);
-  doc.text(`Data: ${new Date().toLocaleString()}`, 40, 120);
+  doc.setFontSize(12);
+  doc.text('Quiz NELC — Pronomes Pessoais (Personal Pronouns)',40,40);
+  doc.text(`Participante: ${playerName}`,40,60);
+  doc.text(`Pontuação: ${score}/${QUESTIONS.length}`,40,80);
+  doc.text(`Tempo: ${formatTime(timer)}`,40,100);
+  doc.text(`Data: ${new Date().toLocaleString()}`,40,120);
 
-  // Tabela: Pergunta | Resposta do jogador | Resposta correcta
-  const head = [['#','Pergunta','Resposta do jogador','Resposta correcta']];
-  const body = QUESTIONS.map((q,i)=>[
+  const head=[['#','Pergunta','Tua resposta','Correta']];
+  const body=QUESTIONS.map((q,i)=>[
     (i+1).toString(),
     q.q,
-    userAnswers[i] === null ? 'Sem resposta' : q.a[userAnswers[i]],
+    userAnswers[i]===null?'—':q.a[userAnswers[i]],
     q.a[q.correct]
   ]);
 
-  doc.setFontSize(10);
-  // Usa autoTable para a tabela (ajusta posição)
   doc.autoTable({
-    startY: 140,
-    head: head,
-    body: body,
-    styles: { font: 'Times', fontSize: 10, cellPadding: 6 },
-    headStyles: { fillColor: [28, 79, 102] }
+    startY:140,
+    head:head,
+    body:body,
+    styles:{font:'Times',fontSize:12,cellPadding:4},
+    headStyles:{fillColor:[28,79,102]}
   });
 
-  // Espaço para observações do professor (depois da tabela)
-  const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 20 : 140 + (body.length+1)*20;
-  doc.setFontSize(11);
-  doc.text("Observações / Comentários do Professor:", 40, finalY);
-  // Caixa de observação (simplesmente desenhada)
-  doc.rect(40, finalY + 8, 510, 80);
-  // Rodapé com slogan
-  doc.setFontSize(9);
-  doc.text("Powered by NELC — Inglês que conecta Moçambique ao mundo", 40, 820);
-
-  // Salvar
-  const filename = `Resultado_${playerName.replace(/\s+/g,'_') || 'Aluno'}.pdf`;
-  doc.save(filename);
+  const y=doc.lastAutoTable.finalY+20;
+  doc.text('Espaço para Observações / Respostas:',40,y);
+  doc.rect(40,y+10,520,80);
+  doc.setFontSize(10);
+  doc.text('Powered by NELC — Inglês que conecta Moçambique ao mundo 🌍',40,820);
+  doc.save(`Resultado_${playerName.replace(/\s+/g,'_')}.pdf`);
 }
 
-/* ======= Navegação ======= */
-prevBtn.addEventListener('click', ()=>{
-  if(current > 0){
-    current--;
-    renderQuestion();
-  }
-});
-nextBtn.addEventListener('click', ()=>{
-  if(current < QUESTIONS.length - 1){
-    current++;
-    renderQuestion();
-  }
-});
-skipBtn.addEventListener('click', ()=>{
-  // marcar sem resposta e avançar
-  if(userAnswers[current] === null){
-    userAnswers[current] = null; // permanece null, mas força avanço
-  }
-  if(current < QUESTIONS.length - 1){
-    current++;
-    renderQuestion();
-  } else {
-    showResult();
-  }
-});
-
-/* ======= Iniciar quiz ======= */
-document.getElementById('startBtn').addEventListener('click', ()=>{
-  const input = document.getElementById('playerNameInput');
-  if(!input.value.trim()){
-    alert('Por favor, digita o teu nome.');
-    return;
-  }
-  playerName = input.value.trim();
-  startScreen.style.display = 'none';
-  quizScreen.style.display = 'block';
-  current = 0;
-  score = 0;
-  timerSeconds = 0;
-  userAnswers = Array(QUESTIONS.length).fill(null);
+prevBtn.addEventListener('click',()=>{if(current>0){current--;renderQuestion();}});
+nextBtn.addEventListener('click',()=>{if(current<QUESTIONS.length-1){current++;renderQuestion();}});
+document.getElementById('startBtn').addEventListener('click',()=>{
+  const input=document.getElementById('playerNameInput');
+  if(!input.value.trim()){alert('Por favor, digita o teu nome.');return;}
+  playerName=input.value.trim();
+  startScreen.style.display='none';
+  quizScreen.style.display='block';
   renderQuestion();
   startTimer();
 });
-
 </script>
 </body>
 </html>
